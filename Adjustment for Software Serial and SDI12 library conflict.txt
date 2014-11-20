@@ -1,0 +1,95 @@
+**Contributed by Kevin Smith of Stroud Research Center**
+
+If you look at the SoftwareSerial library - 
+https://github.com/arduino/Arduino/blob/master/libraries/SoftwareSerial/SoftwareSerial.cpp
+
+- you will see a section of code copied below: 
+
+#if defined(PCINT0_vect)
+ISR(PCINT0_vect)
+{
+  SoftwareSerial::handle_interrupt();
+}
+#endif
+
+#if defined(PCINT1_vect)
+ISR(PCINT1_vect)
+{
+  SoftwareSerial::handle_interrupt();
+}
+#endif
+
+#if defined(PCINT2_vect)
+ISR(PCINT2_vect)
+{
+  SoftwareSerial::handle_interrupt();
+}
+#endif
+
+#if defined(PCINT3_vect)
+ISR(PCINT3_vect)
+{
+  SoftwareSerial::handle_interrupt();
+}
+#endif
+
+
+It basically says, if the hardware has something called PCINT0, PCINT1, PCINT2, or PCINT3, 
+claim it for the SoftwareSerial library to use. ArduinoUNO only has up to PCINT2, but
+other models have more PCINTs available. 
+
+Anyway, we do not need to be so greedy. We only need pins 2 and 3 for SoftwareSerial, which
+is PCINT2. So we simply "comment out" the sections in the SoftwareSerial library that
+we aren't using for SoftwareSerial. Commenting out is better than deleting, since you
+may want to get this functionality back later. 
+
+//#if defined(PCINT0_vect)
+//ISR(PCINT0_vect)
+//{
+//  SoftwareSerial::handle_interrupt();
+//}
+//#endif
+
+//#if defined(PCINT1_vect)
+//ISR(PCINT1_vect)
+//{
+//  SoftwareSerial::handle_interrupt();
+//}
+//#endif
+
+#if defined(PCINT2_vect)
+ISR(PCINT2_vect)
+{
+  SoftwareSerial::handle_interrupt();
+}
+#endif
+
+//#if defined(PCINT3_vect)
+//ISR(PCINT3_vect)
+//{
+//  SoftwareSerial::handle_interrupt();
+//}
+//#endif
+
+Next, we are going to do the complementary action in the SDI-12 Library, which is also
+being greedy. Since we are using pin 9 for SDI-12, we give it to PCINT0:
+
+//6.3
+#if defined(PCINT0_vect)
+ISR(PCINT0_vect){ SDI12::handleInterrupt(); }
+#endif
+
+//#if defined(PCINT1_vect)
+//ISR(PCINT1_vect){ SDI12::handleInterrupt(); }
+//#endif
+
+//#if defined(PCINT2_vect)
+//ISR(PCINT2_vect){ SDI12::handleInterrupt(); }
+//#endif
+
+//#if defined(PCINT3_vect)
+//ISR(PCINT3_vect){ SDI12::handleInterrupt(); }
+//#endif
+
+Restart the Arduino IDE, and it should recognize the changes to the libraries and your
+code should compile without issue. 
